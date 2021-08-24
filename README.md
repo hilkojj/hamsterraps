@@ -24,6 +24,13 @@
 
 - Login to raspberry via SSH using `ssh pi@`*`hostname`*
 
+## Git(hub) using SSH
+- ### Install git
+- ### `ssh-keygen -t ed25519 -C "your_mail_adress_you_use_for_github@example.com"`
+- ### Enter a passphrase
+- ### `eval "$(ssh-agent -s)"`
+- ### `ssh-add ~/.ssh/id_ed25519`
+- ### [Add the ssh key to GitHub](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account). Copy and paste the contents of `~/.ssh/id_ed25519.pub`
 
 ## Python & GPio stuff
 
