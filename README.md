@@ -3,12 +3,12 @@
 
 ## Basic configuration
 
-- ### Install `Raspberry Pi OS Lite (32-bit)` with SSH enabled.
+- Install `Raspberry Pi OS Lite (32-bit)` with SSH enabled.
   With i.e. Raspi Card Imager for Android. Available in Play Store.
 
-- ### Edit password with `passwd`
+- Edit password with `passwd`
 
-- ### Edit `/etc/wpa_supplicant/wpa_supplicant.conf` to enter WiFi network and password.
+- Edit `/etc/wpa_supplicant/wpa_supplicant.conf` to enter WiFi network and password.
   Add the following to the end of the file:
   ```bash
   network={
@@ -17,20 +17,79 @@
   }
   ```
 
-- ### Execute `hostname -I` to check assigned IP adress
+- Execute `hostname -I` to check assigned IP adress
 
-- ### Edit the hostname of the raspberry using `sudo raspi-config`. 
+- Edit the hostname of the raspberry using `sudo raspi-config`. 
   `System options` -> `Hostname`
 
 - Login to raspberry via SSH using `ssh pi@`*`hostname`*
 
 ## Git(hub) using SSH
-- ### Install git
-- ### `ssh-keygen -t ed25519 -C "your_mail_adress_you_use_for_github@example.com"`
-- ### Enter a passphrase
-- ### `eval "$(ssh-agent -s)"`
-- ### `ssh-add ~/.ssh/id_ed25519`
-- ### [Add the ssh key to GitHub](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account). Copy and paste the contents of `~/.ssh/id_ed25519.pub`
+- Install git
+- `ssh-keygen -t ed25519 -C "your_mail_adress_you_use_for_github@example.com"`
+- Enter a passphrase
+- `eval "$(ssh-agent -s)"`  (?)
+- `ssh-add ~/.ssh/id_ed25519` (?)
+- [Add the ssh key to GitHub](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account). Copy and paste the contents of `~/.ssh/id_ed25519.pub`
+
+## NGINX
+- Guide from [here](https://engineerworkshop.com/blog/setup-an-nginx-reverse-proxy-on-a-raspberry-pi-or-any-other-debian-os/).
+- ```bash
+  sudo apt-get update
+  sudo apt-get upgrade
+  ```
+- `sudo apt-get remove apache2` (in case apache is installed)
+- `sudo apt-get install nginx`
+- Confirm by browsing to `http://`*`your-hostname`*`/`
+- Create `/etc/nginx/sites-available/`*`url`*`.conf`
+  ```bash
+  server {
+    listen 4000;
+    server_name *url here, e.g. raps.hilkojj.nl*;
+    location / {
+      proxy_pass http://localhost:8000;
+    }
+  }
+  ```
+- `sudo ln -s /etc/nginx/sites-available/`*`url`*`.conf /etc/nginx/sites-enabled/`*`url`*`.conf`
+- Confirm with `sudo nginx -t`
+- Reload NGINX `sudo systemctl reload nginx`
+- Read logs with
+  ```
+  sudo tail -f /var/log/nginx/access.log
+  ```
+  or
+  ```
+  sudo tail -f /var/log/nginx/error.log
+  ```
+
+
+## Firewall
+- Install firewall `sudo apt install ufw`
+- `sudo ufw limit 22` limited SSH access
+- `sudo ufw allow 80` unlimited access to default NGINX http server (required for certbot)
+- `sudo ufw allow 443` unlimited access to httpS server
+- Confirm with `sudo ufw show added`
+- Enable with `sudo ufw enable`
+- Check status anytime with `sudo ufw status`
+
+## Port forwarding
+- Give the raspberry a static local IP adress.
+- Using NAT forward port 443 from raspberry to port 443
+- Using NAT forward port 80 from raspberry to port 80
+- Now default NGINX server is visible on `http://`*`url`*. This is needed for certbot
+
+## Letsencrypt (Serve over httpS)
+- `sudo apt install letsencrypt`
+- Confirm renewal bot is running: `sudo systemctl status certbot.timer`
+- `apt install python3-certbot-nginx`
+- `sudo certbot --nginx --agree-tos --preferred-challenges http -d raps.hilkojj.nl`
+  
+  ### NOTE:
+  certbot will try to retrieve a file for confirmation from the provided url, so make sure port 80 is also port forwarded.
+
+- Now everything that is hosted locally on port 8000 will be accessible through HTTPS (port 443): `https://`*`url`*
+
 
 ## Python & GPio stuff
 
