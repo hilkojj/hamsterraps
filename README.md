@@ -91,13 +91,19 @@
 - Now everything that is hosted locally on port 8000 will be accessible through HTTPS (port 443): `https://`*`url`*
 
 
-## Python & GPio stuff
+## Python & booting stuff
 
 - Install Pip3 and other useful utilities:
   ```bash
   sudo apt-get install python3-dev python3-pip
   sudo python3 -m pip install --upgrade pip setuptools wheel
   ```
+- Install pipenv to keep track of installed packages for this project:
+  `pip3 install --user pipenv`
+- Enter the environment with `pipenv shell`.
+- Run boot.py on each reboot: `sudo nano /etc/crontab`.
+- Add `@reboot pi cd /home/pi/hamsterraps/ && /home/pi/.local/bin/pipenv run python boot.py` to end of file.
+
 
 ## Temperature sensor
 - `sudo pip3 install Adafruit_DHT`

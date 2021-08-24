@@ -1,5 +1,6 @@
 log.txt
 raps_firebase_account_key.json
+*.db
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,linux
