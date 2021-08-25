@@ -1,23 +1,45 @@
 # from http.server import BaseHTTPRequestHandler, HTTPServer
-import json
 import db
+import tempsensor
 
-import eventlet
+from flask import Flask
 import socketio
+import eventlet
+eventlet.monkey_patch()
 
 HOST_NAME = "localhost"
 SERVER_PORT = 8000
-LOG_SOCKET_IO = False
+LOG_SOCKET_IO = True
 LOG_WSGI = False
 
 db_con = db.get_connection()
 cur = db_con.cursor()
+
+temp, humid = 0, 0
 viewers = 0
 
-sio = socketio.Server(cors_allowed_origins="*", logger=LOG_SOCKET_IO, engineio_logger=LOG_SOCKET_IO) # cbor?
-app = socketio.WSGIApp(sio, static_files={
+
+sio = socketio.Server(cors_allowed_origins="*", logger=LOG_SOCKET_IO, engineio_logger=LOG_SOCKET_IO)
+app = Flask(__name__)
+app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app, static_files={
   # '/': {'content_type': 'text/html', 'filename': 'index.html'}
 })
+
+@app.route("/")
+def hello_world():
+    return "Hello. Visit <a href='https://hilkojj.nl/hamster/'>hilkojj.nl/hamster</a>"
+
+def send_sensor_data(to=None):
+  sio.emit("temperature", temp, to=to)
+  sio.emit("humidity", humid, to=to)
+
+def set_temp_humid(t, h):
+  global temp
+  global humid
+  temp, humid = t, h
+  send_sensor_data()
+
+tempsensor.on_update.append(set_temp_humid)
 
 @sio.event
 def connect(sid, environ):
@@ -25,10 +47,6 @@ def connect(sid, environ):
   global viewers
   viewers += 1
   sio.emit("viewers", viewers)
-
-def send_sensor_data(to=None):
-  sio.emit("temperature", 123, to=to)
-  sio.emit("humidity", 10, to=to)
 
 @sio.event
 def request_sensor_data(sid):
@@ -46,10 +64,8 @@ def disconnect(sid):
   viewers -= 1
   sio.emit("viewers", viewers)
 
-
 def start():
   eventlet.wsgi.server(eventlet.listen((HOST_NAME, SERVER_PORT)), app, log_output=LOG_WSGI)
-  send_sensor_data()
 
   # class ApiServer(BaseHTTPRequestHandler):
   #   def do_GET(self):

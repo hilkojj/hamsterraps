@@ -5,6 +5,8 @@ import db
 DHT_SENSOR = Adafruit_DHT.DHT11
 DHT_PIN = 4
 
+on_update = []
+
 def start():
   humidity, temperature = 0, 0
 
@@ -59,6 +61,8 @@ def start():
         failed_once = False
         for freq in frequencies:
           freq.tick()
+        for cb in on_update:
+          cb(temperature, humidity)
 
     else:
       if failed_once:
