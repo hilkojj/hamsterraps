@@ -2,7 +2,8 @@
 import db
 import tempsensor
 
-from flask import Flask
+import time
+from flask import Flask, request
 import socketio
 import eventlet
 eventlet.monkey_patch()
@@ -27,7 +28,26 @@ app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app, static_files={
 
 @app.route("/")
 def hello_world():
-    return "Hello. Visit <a href='https://hilkojj.nl/hamster/'>hilkojj.nl/hamster</a>"
+  return "Hello. Visit <a href='https://hilkojj.nl/hamster/'>hilkojj.nl/hamster</a>"
+
+@app.route("/sensor_data.json")
+def get_sensor_data():
+
+  table_name = {
+    "minute": "temp_humid_minute",
+    "10minutes": "temp_humid_10minutes",
+    "hour": "temp_humid_hour",
+  }.get(
+    request.args.get('frequency', default="minute", type=str),
+    "temp_humid_minute" # default table_name
+  )
+  since_date =  request.args.get('since_date', default=0, type=int)
+  to_date =     request.args.get('to_date', default=time.time(), type=int)
+
+  cur.execute("SELECT * FROM {0} WHERE date > ? AND date < ? ORDER BY date ASC LIMIT 1440".format(table_name), (since_date, to_date))
+  return {
+    "datapoints": cur.fetchall()
+  }
 
 def send_sensor_data(to=None):
   sio.emit("temperature", temp, to=to)
@@ -66,49 +86,3 @@ def disconnect(sid):
 
 def start():
   eventlet.wsgi.server(eventlet.listen((HOST_NAME, SERVER_PORT)), app, log_output=LOG_WSGI)
-
-  # class ApiServer(BaseHTTPRequestHandler):
-  #   def do_GET(self):
-  #     try:
-  #       response_obj = {}
-
-  #       if self.path == "/current_sensor_data.json":
-  #         self.send_response(200)
-
-  #         cur.execute("SELECT * FROM temp_humid_minute ORDER BY date DESC LIMIT 1")
-
-  #         response_obj["date"], response_obj["temperature"], response_obj["humidity"] = cur.fetchone()
-
-  #       elif self.path == "/day_sensor_data.json":
-  #         self.send_response(200)
-
-  #         cur.execute("SELECT * FROM temp_humid_minute ORDER BY date DESC LIMIT 1440")
-  #         response_obj["datapoints"] = []
-
-  #         for row in cur:
-  #           point = {}
-  #           point["date"], point["temperature"], point["humidity"] = row
-  #           response_obj["datapoints"].append(point)
-
-  #       else:
-  #         self.send_response(404)
-          
-  #         response_obj["error"] = "this is not a valid path"
-
-  #       self.send_header("Content-type", "application/json")
-  #       self.end_headers()
-  #       self.wfile.write(bytes(json.dumps(response_obj, indent=2), "utf-8"))
-  #     except BrokenPipeError:
-  #       pass
-
-
-  # webServer = HTTPServer((HOST_NAME, SERVER_PORT), ApiServer)
-  # print("ApiServer started http://%s:%s" % (HOST_NAME, SERVER_PORT))
-
-  # try:
-  #   webServer.serve_forever()
-  # except KeyboardInterrupt:
-  #   pass
-
-  # webServer.server_close()
-  # print("Server stopped.")
