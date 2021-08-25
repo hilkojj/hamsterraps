@@ -48,9 +48,13 @@
     server_name *url here, e.g. raps.hilkojj.nl*;
     location / {
       proxy_pass http://localhost:8000;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "Upgrade";
     }
   }
   ```
+  **NOTE**: The `Upgrade` and `Connection` headers are to support Websockets.
+
 - `sudo ln -s /etc/nginx/sites-available/`*`url`*`.conf /etc/nginx/sites-enabled/`*`url`*`.conf`
 - Confirm with `sudo nginx -t`
 - Reload NGINX `sudo systemctl reload nginx`
