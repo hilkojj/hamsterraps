@@ -4,6 +4,7 @@ import tempsensor
 
 import time
 from flask import Flask, request
+from flask_cors import CORS
 import socketio
 import eventlet
 eventlet.monkey_patch()
@@ -25,6 +26,7 @@ app = Flask(__name__)
 app.wsgi_app = socketio.WSGIApp(sio, app.wsgi_app, static_files={
   # '/': {'content_type': 'text/html', 'filename': 'index.html'}
 })
+CORS(app)
 
 @app.route("/")
 def hello_world():
@@ -44,7 +46,9 @@ def get_sensor_data():
   since_date =  request.args.get('since_date', default=0, type=int)
   to_date =     request.args.get('to_date', default=time.time(), type=int)
 
-  cur.execute("SELECT * FROM {0} WHERE date > ? AND date < ? ORDER BY date ASC LIMIT 1440".format(table_name), (since_date, to_date))
+  LIMIT = 24 * 365
+
+  cur.execute("SELECT * FROM {0} WHERE date > ? AND date < ? ORDER BY date ASC LIMIT {1}".format(table_name, LIMIT), (since_date, to_date))
   return {
     "datapoints": cur.fetchall()
   }

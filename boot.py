@@ -1,6 +1,9 @@
+#!./bin/python
+
 import db
 import tempsensor
 import apiserver
+import ledstrips.controller
 
 import threading
 import sys
@@ -34,6 +37,11 @@ if __name__ == "__main__":
   api_thread = threading.Thread(target=apiserver.start)
   api_thread.start()
 
+  # # start LEDSTRIP animations:
+  # led_thread = threading.Thread(target=ledstrips.controller.start)
+  # led_thread.start()
+
   # wait till all have finished:
   tempsensor_thread .join()
   api_thread        .join()
+  # led_thread        .join()

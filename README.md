@@ -105,8 +105,15 @@
 - Install pipenv to keep track of installed packages for this project:
   `pip3 install --user pipenv`
 - Enter the environment with `pipenv shell`.
+
+  Use `sudo -E env PATH=$PATH python boot.py` to run script with sudo
 - Run boot.py on each reboot: `sudo nano /etc/crontab`.
-- Add `@reboot pi cd /home/pi/hamsterraps/ && /home/pi/.local/bin/pipenv run python boot.py` to end of file.
+- Add `@reboot pi cd /home/pi/hamsterraps/ && sudo -E env PATH=$PATH /home/pi/.local/bin/pipenv run python boot.py` to end of file.
+  
+  `sudo` is needed in order for `ws2811_init()` to succeed. (`-5` return code otherwise).
+
+  `sudo -E env PATH=$PATH` explained [here](https://askubuntu.com/a/1342154).
+
 
 
 ## Temperature sensor

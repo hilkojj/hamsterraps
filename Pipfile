@@ -8,6 +8,8 @@ adafruit-dht = "*"
 python-socketio = "*"
 flask = "*"
 eventlet = "*"
+flask-cors = "*"
+adafruit-circuitpython-neopixel = "*"
 
 [dev-packages]
 
