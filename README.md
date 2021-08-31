@@ -136,3 +136,26 @@
       time.sleep(3);
   ```
   *copied from [here](https://www.thegeekpub.com/236867/using-the-dht11-temperature-sensor-with-the-raspberry-pi/)*
+
+## Waveshare display
+- Add this to the end of `/boot/config.txt`:
+  ```bash
+  max_usb_current=1
+  hdmi_group=2
+  hdmi_mode=87
+  hdmi_cvt 800 480 60 6 0 0 0  
+  hdmi_drive=1
+  ```
+  [More info on waveshare display](https://www.waveshare.com/wiki/5inch_HDMI_LCD_(B))
+- Enable passwordless login to console with `sudo raspi-config` -> 1 -> S5
+- Follow [this](https://blog.r0b.io/post/minimal-rpi-kiosk/) (or [this](https://sylvaindurand.org/launch-chromium-in-kiosk-mode/)) guide on starting up Chromium without a window manager.
+- Also don't forget to add this to `~/.bash_profile`, otherwise `~/.bashrc` won't work anymore:
+  ```bash
+  if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+        . "$HOME/.bashrc"
+    fi
+  fi
+  ```
+- Install an emoji font with `sudo apt-get install fonts-noto-color-emoji`
