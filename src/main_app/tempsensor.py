@@ -1,14 +1,16 @@
 import Adafruit_DHT
 import time
-import db
+from ..common import db, main_app_socket
+from . import main_app_server
 
 DHT_SENSOR = Adafruit_DHT.DHT11
 DHT_PIN = 4
 
-on_update = []
-
 def start():
   humidity, temperature = 0, 0
+
+  con = db.get_connection()
+  cur = con.cursor()
 
   class Frequency():
 
@@ -31,17 +33,12 @@ def start():
 
         print("insert into {0}: Temp={1:0.1f}C Humidity={2:0.1f}%".format(self.db_table, self.tempAvg, self.humidAvg))
 
-        con = db.get_connection()
-        cur = con.cursor()
-
         cur.execute("INSERT INTO {0} VALUES (?, ?, ?)".format(self.db_table), (time.time(), self.tempAvg, self.humidAvg))
 
         con.commit()
-        con.close()
 
         self.humidAvg, self.tempAvg, self.samples = 0, 0, 0
         self.last_insert = time.time()
-        
         
 
   frequencies = [Frequency(60, "temp_humid_minute"), Frequency(60 * 10, "temp_humid_10minutes"), Frequency(60*60, "temp_humid_hour")]
@@ -61,9 +58,12 @@ def start():
         failed_once = False
         for freq in frequencies:
           freq.tick()
-        for cb in on_update:
-          cb(temperature, humidity)
 
+        packet = main_app_socket.MainAppPacket()
+        packet.sensor_data = main_app_socket.SensorData()
+        packet.sensor_data.temperature = temperature
+        packet.sensor_data.humidity = humidity
+        main_app_server.send_queue.put(packet)
     else:
       if failed_once:
         print("Sensor failure. Check wiring.")
@@ -71,4 +71,5 @@ def start():
         failed_once = True
     time.sleep(1.5)
 
+  con.close()
 

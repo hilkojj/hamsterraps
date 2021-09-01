@@ -108,7 +108,7 @@
 
   Use `sudo -E env PATH=$PATH python boot.py` to run script with sudo
 - Run boot.py on each reboot: `sudo nano /etc/crontab`.
-- Add `@reboot pi cd /home/pi/hamsterraps/ && sudo -E env PATH=$PATH /home/pi/.local/bin/pipenv run python boot.py` to end of file.
+- Add `@reboot pi cd /home/pi/hamsterraps/ && sudo -E env PATH=$PATH /home/pi/.local/bin/pipenv run sh ./boot.sh` to end of file.
   
   `sudo` is needed in order for `ws2811_init()` to succeed. (`-5` return code otherwise).
 
@@ -149,13 +149,21 @@
   [More info on waveshare display](https://www.waveshare.com/wiki/5inch_HDMI_LCD_(B))
 - Enable passwordless login to console with `sudo raspi-config` -> 1 -> S5
 - Follow [this](https://blog.r0b.io/post/minimal-rpi-kiosk/) (or [this](https://sylvaindurand.org/launch-chromium-in-kiosk-mode/)) guide on starting up Chromium without a window manager.
-- Also don't forget to add this to `~/.bash_profile`, otherwise `~/.bashrc` won't work anymore:
+- Also don't forget to add this to `~/.bash_profile`, otherwise `~/.bashrc` and `~/.profile` won't work anymore:
   ```bash
   if [ -n "$BASH_VERSION" ]; then
     # include .bashrc if it exists
     if [ -f "$HOME/.bashrc" ]; then
         . "$HOME/.bashrc"
     fi
+    if [ -f "$HOME/.profile" ]; then
+        . "$HOME/.profile"
+    fi
   fi
   ```
 - Install an emoji font with `sudo apt-get install fonts-noto-color-emoji`
+
+## IR Camera
+- Enable camera with `sudo raspi-config` and reboot
+- Install ffmpeg `sudo apt install ffmpeg`
+

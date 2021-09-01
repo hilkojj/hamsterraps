@@ -1,6 +1,5 @@
-# from http.server import BaseHTTPRequestHandler, HTTPServer
-import db
-import tempsensor
+import threading
+from ..common import db, logging, main_app_socket
 
 import time
 from flask import Flask, request
@@ -57,13 +56,12 @@ def send_sensor_data(to=None):
   sio.emit("temperature", temp, to=to)
   sio.emit("humidity", humid, to=to)
 
-def set_temp_humid(t, h):
+def set_temp_humid(data):
   global temp
   global humid
-  temp, humid = t, h
+  temp, humid = data.temperature, data.humidity
   send_sensor_data()
 
-tempsensor.on_update.append(set_temp_humid)
 
 @sio.event
 def connect(sid, environ):
@@ -88,5 +86,15 @@ def disconnect(sid):
   viewers -= 1
   sio.emit("viewers", viewers)
 
-def start():
+
+def listen_to_main():
+  main_app_socket.connect(set_temp_humid)
+
+if __name__ == "__main__":
+  logging.log_to("api_latest.log")
+
+  listen_to_main_thread = threading.Thread(target=listen_to_main)
+  listen_to_main_thread.start()
+  
   eventlet.wsgi.server(eventlet.listen((HOST_NAME, SERVER_PORT)), app, log_output=LOG_WSGI)
+  listen_to_main_thread.join()

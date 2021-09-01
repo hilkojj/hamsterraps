@@ -46,7 +46,7 @@ def rainbow(strips, wait_ms=20, iterations=1):
         strip.setPixelColor(i, wheel((i + j) & 255))
       strip.show()
       strip_i += 1
-  time.sleep(wait_ms / 1000.0)
+    time.sleep(wait_ms / 1000.0)
 
 def start():
 

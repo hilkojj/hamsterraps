@@ -14,6 +14,9 @@ def create_db():
   cur.execute('''CREATE TABLE IF NOT EXISTS temp_humid_hour
                (date integer, temperature real, humidity real)''')
 
+  # cur.execute('''CREATE TABLE IF NOT EXISTS current_values
+  #              (temperature real, humidity real)''')
+
   # cur.execute('''VACUUM''')
 
   con.commit()
