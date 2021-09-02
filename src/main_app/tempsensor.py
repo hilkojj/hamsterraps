@@ -3,7 +3,7 @@ import time
 from ..common import db, main_app_socket
 from . import main_app_server
 
-DHT_SENSOR = Adafruit_DHT.DHT11
+DHT_SENSOR = Adafruit_DHT.DHT22
 DHT_PIN = 4
 
 def start():

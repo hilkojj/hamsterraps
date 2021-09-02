@@ -1,15 +1,13 @@
-import time
 from rpi_ws281x import *
+from .animations import rainbow, stripes, test
 
 # LED strip configuration:
-LED_COUNT = 11 * 4      # Number of LED pixels.
+LED_COUNT = 11 * 8      # Number of LED pixels.
 
 # https://tutorials-raspberrypi.com/connect-control-raspberry-pi-ws2812-rgb-led-strips/
 # https://i.stack.imgur.com/gaU6t.png
-LED_PIN_0 = 18          # GPIO pin connected to the pixels (18 uses PWM!).
+LED_PIN_0 = 12          # GPIO pin connected to the pixels (18 uses PWM!).
 LED_PIN_1 = 13
-LED_PIN_2 = 19
-LED_PIN_3 = 12
 
 LED_FREQ_HZ = 800000    # LED signal frequency in hertz (usually 800khz)
 LED_DMA = 10            # DMA channel to use for generating signal (try 10)
@@ -21,69 +19,128 @@ LED_INVERT = False
 
 LED_CHANNEL_0 = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 LED_CHANNEL_1 = 1       # set to '1' for GPIOs 13, 19, 41, 45 or 53
-LED_CHANNEL_2 = 1       # set to '1' for GPIOs 13, 19, 41, 45 or 53
-LED_CHANNEL_3 = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
 
-def wheel(pos):
-  """Generate rainbow colors across 0-255 positions."""
-  if pos < 85:
-    return Color(pos * 3, 255 - pos * 3, 0)
-  elif pos < 170:
-    pos -= 85
-    return Color(255 - pos * 3, 0, pos * 3)
-  else:
-    pos -= 170
-    return Color(0, pos * 3, 255 - pos * 3)
+"""
+LEDS PER SQUARE
+& index range
+
+         ╔════════╦════════╦════════╦════════╗
+         ║ 10     ║ 11     ║ 11     ║ 11     ║  ↰ DATA CONTINUES UP IN OPPOSITE DIRECTION (R→L)
+         ║        ║        ║        ║        ║
+         ║ 86..77 ║ 76..66 ║ 65..55 ║ 54..44 ║  row 3
+         ╠════════╬════════╩════════╬════════╣
+DATA 1 → ║ 11     ║ 11     │ 11     ║ 11     ║
+         ║        ║        │        ║        ║
+         ║ 0..10  ║ 11..21 │ 22..32 ║ 33..43 ║  row 2
+         ╠════════╬════════╦════════╬════════╣
+DATA 0 → ║ 11     ║ 11     ║ 11     ║ 9      ║
+         ║        ║        ║        ║        ║
+         ║ 0..10  ║ 11..21 ║ 22..32 ║ 33..41 ║  row 1
+         ╠════════╬════════╬════════╬════════╣
+         ║ 10     ║ 11     ║ 11     ║ 11     ║  ↲ DATA CONTINUES DOWN IN OPPOSITE DIRECTION (R→L)
+         ║        ║        ║        ║        ║
+         ║ 84..75 ║ 74..64 ║ 63..53 ║ 52..42 ║  row 0
+         ╚════════╩════════╩════════╩════════╝
+
+"""
+
+class Controller:
+
+  def __init__(self):
+    # Create NeoPixel objects with appropriate configuration.
+    self.datalines = [
+      Adafruit_NeoPixel(
+        LED_COUNT, LED_PIN_0, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_0
+      ),
+      Adafruit_NeoPixel(
+        LED_COUNT, LED_PIN_1, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_1
+      )
+    ]
+
+    i = 0
+    for line in self.datalines:
+      # Intialize the library (must be called once before other functions).
+      print("Initializing LED-strip/dataline", i)
+      line.begin()
+      i += 1
+
+    # while True:
+    #   for anim in ANIMATIONS:
+    #     anim(self)
+
+  def row_i_to_dataline_i(self, row, i):
+    """
+    As seen in the table above, the indexes of LEDs on the two data lines is extremely confusing.
+    
+    Therefore animations should not bother trying to use indices on the data lines,
+    instead they can locate a LED by row (0 - 3) and LED-index (0 - 43).
+
+    This function will take that as input and return the right dataline and LED-index on the dataline.
+    """
+
+    dataline = 0 if row < 2 else 1
+    dataline_i = -1
+    
+    if dataline == 0:
+      if row == 1:
+        dataline_i = i if i <= 41 else 41
+      else:
+        dataline_i = 85 - i
+    else:
+      if row == 2:
+        dataline_i = i
+      else:
+        dataline_i = 87 - i
+
+    return self.datalines[dataline], dataline_i
+
+  def get_color(self, row, i):
+    line, led = self.row_i_to_dataline_i(row, i)
+    return line.getPixelColor(led) if led > 0 else Color(0, 0, 0)
+
+  def set_color(self, row, i, color):
+    line, led = self.row_i_to_dataline_i(row, i)
+    line.setPixelColor(led, color)
+
+  def set_range_color(self, row, i0, i1, color):
+    line, led0 = self.row_i_to_dataline_i(row, i0)
+    _,    led1 = self.row_i_to_dataline_i(row, i1)
+    for led in range(min(led0, led1), max(led0, led1) + 1):
+      line.setPixelColor(led, color)
+
+  def show(self):
+    for line in self.datalines:
+      line.show()
+
+  def clear(self, color=Color(0, 0, 0)):
+    for row in range(4):
+      self.set_range_color(row, 0, 43, color)
+    self.show()
 
 
-def rainbow(strips, wait_ms=20, iterations=1):
-  """Draw rainbow that fades across all pixels at once."""
-  for j in range(256 * iterations):
-    strip_i = 0
-    for strip in strips:
-      for i in range(strip.numPixels()):
-        strip.setPixelColor(i, wheel((i + j) & 255))
-      strip.show()
-      strip_i += 1
-    time.sleep(wait_ms / 1000.0)
+ANIMATIONS = [
+  rainbow.rainbow,
+  # stripes.stripes
+]
 
 def start():
 
-  # # Finding right pin & channel combinations:
-  # for i in range(0, 40):
-  #   for c in range(0, 1):
-  #     try:
-  #       strip = Adafruit_NeoPixel(
-  #         LED_COUNT, i, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, c
-  #       )
-  #       strip.begin()
-  #       print("yes ", i, c)
-  #     except Exception:
-  #       print("not ", i, c)
+  controller = Controller()
+  controller.clear()
 
-  # Create NeoPixel objects with appropriate configuration.
-  strips = [
-    Adafruit_NeoPixel(
-      LED_COUNT, LED_PIN_0, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_0
-    ),
-    Adafruit_NeoPixel(
-      LED_COUNT, LED_PIN_1, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_1
-    ),
-    Adafruit_NeoPixel(
-      LED_COUNT, LED_PIN_2, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_2
-    ),
-    Adafruit_NeoPixel(
-      LED_COUNT, LED_PIN_3, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL_3
-    )
-  ]
+  test.test(controller)
 
-  i = 0
-  for strip in strips:
-    # Intialize the library (must be called once before other functions).
-    print("Initializing strip", i)
-    strip.begin()
-    i += 1
 
-  while True:
-    rainbow(strips)
+
+# # Finding right pin & channel combinations:
+# for i in range(0, 40):
+#   for c in range(0, 1):
+#     try:
+#       strip = Adafruit_NeoPixel(
+#         LED_COUNT, i, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, c
+#       )
+#       strip.begin()
+#       print("yes ", i, c)
+#     except Exception:
+#       print("not ", i, c)
