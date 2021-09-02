@@ -20,6 +20,16 @@ LED_INVERT = False
 LED_CHANNEL_0 = 0       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 LED_CHANNEL_1 = 1       # set to '1' for GPIOs 13, 19, 41, 45 or 53
 
+def color_to_RGB(color):
+  return [color >> 16 & 0xff,
+          color >> 8  & 0xff,
+          color       & 0xff]
+
+def RGB_to_color(rgb):
+  return Color(rgb[0], rgb[1], rgb[2])
+
+def interpolate_rgb(old, new, progress):
+  return [int(old[i] * (1. - progress) + new[i] * progress) for i in range(3)]
 
 """
 LEDS PER SQUARE
@@ -45,6 +55,9 @@ DATA 0 → ║ 11     ║ 11     ║ 11     ║ 9      ║
 
 """
 
+CAGE_ROW = 2
+CAGE_RANGE = range(11, 32)
+
 class Controller:
 
   def __init__(self):
@@ -65,9 +78,8 @@ class Controller:
       line.begin()
       i += 1
 
-    # while True:
-    #   for anim in ANIMATIONS:
-    #     anim(self)
+    self.cage_color = Color(255, 255, 255)
+    self.override_cage_color = False
 
   def row_i_to_dataline_i(self, row, i):
     """
@@ -97,7 +109,7 @@ class Controller:
 
   def get_color(self, row, i):
     line, led = self.row_i_to_dataline_i(row, i)
-    return line.getPixelColor(led) if led > 0 else Color(0, 0, 0)
+    return line.getPixelColor(led)
 
   def set_color(self, row, i, color):
     line, led = self.row_i_to_dataline_i(row, i)
@@ -110,6 +122,9 @@ class Controller:
       line.setPixelColor(led, color)
 
   def show(self):
+    if not self.override_cage_color:
+      self.set_range_color(CAGE_ROW, CAGE_RANGE.start, CAGE_RANGE.stop, self.cage_color)
+
     for line in self.datalines:
       line.show()
 
@@ -121,7 +136,7 @@ class Controller:
 
 ANIMATIONS = [
   rainbow.rainbow,
-  # stripes.stripes
+  stripes.stripes
 ]
 
 def start():
@@ -129,7 +144,11 @@ def start():
   controller = Controller()
   controller.clear()
 
-  test.test(controller)
+  # test.test(controller)
+
+  while True:
+    for anim in ANIMATIONS:
+      anim(controller)
 
 
 

@@ -1,71 +1,71 @@
 import time
 from rpi_ws281x import *
 import random
+from .. import controller as c
+
+PALETTE = [
+  [255, 119, 0],
+  [255, 0, 111],
+  [0, 115, 255],
+  [111, 0, 255],
+
+  [255, 0, 20],
+  [255, 251, 0],
+  [0, 68, 255],
+  [0, 255, 174],
+
+  [0, 106, 255],
+  [255, 25, 0],
+  [0, 0, 0],
+  [0, 255, 42],
+
+  [0, 255, 123],
+  [247, 255, 5],
+  [118, 0, 255],
+  [255, 0, 0],
+]
 
 def get_random_color_RGB():
-  PALETTE = [
-    [255, 119, 0],
-    [255, 0, 111],
-    [0, 115, 255],
-    [111, 0, 255],
-    [251, 0, 255],
-    [255, 251, 0],
-    [115, 255, 0],
-    [0, 255, 174],
-    [255, 170, 0],
-    [255, 25, 0],
-    [0, 0, 0],
-    [242, 0, 255],
-    [0, 255, 30],
-    [252, 215, 3],
-    [173, 102, 255],
-    [255, 0, 0],
-  ]
+  global PALETTE
   return random.choice(PALETTE)
 
 SQUARES = 4
 LEDS_PER_SQUARE = 11
 
-def color_to_RGB(color):
-  return [color >> 16 & 0xff,
-          color >> 8  & 0xff,
-          color       & 0xff]
+def show_palette(controller):
+  for i in range(16):
+    global PALETTE
+    controller.set_range_color(int(i / 4), (i % 4) * 11, (i % 4) * 11 + 10, c.RGB_to_color(PALETTE[i]))
+    
+  controller.show()
+  time.sleep(1)
 
-def RGB_to_color(rgb):
-  return Color(rgb[0], rgb[1], rgb[2])
+def stripes(controller, iterations=30):
 
-def interpolate_rgb(old, new, progress):
-  return [int(old[i] * (1. - progress) + new[i] * progress) for i in range(3)]
-
-def stripes(strips, iterations=10):
+  # show_palette(controller)
 
   for _ in range(iterations):
-    time.sleep(2)
-    horizontal = True #random.random() > .5
+    horizontal = random.random() > .5
     colrow = random.randint(0, 3)
-    print("colrow", colrow)
 
     new_RGB = get_random_color_RGB()
 
     for sq in range(SQUARES):
-      print("sq", sq)
 
-      strip = strips[colrow] if horizontal else strips[sq]
-      print("strip", strip)
+      row = colrow if horizontal else sq
 
       led_index = sq * LEDS_PER_SQUARE if horizontal else colrow * LEDS_PER_SQUARE
-      print("led_index", led_index)
 
-      current_color = strip.getPixelColor(led_index)
-      current_RGB = color_to_RGB(current_color)
+      current_color = controller.get_color(row, led_index + 5)
+      current_RGB = c.color_to_RGB(current_color)
 
-      steps = 100
+      steps = 50
       for step in range(steps):
         progress = step / steps
-        stepped_RGB = interpolate_rgb(current_RGB, new_RGB, progress)
-        stepped_color = RGB_to_color(stepped_RGB)
-        for led in range(LEDS_PER_SQUARE):
-          strip.setPixelColor(led_index + led, stepped_color)
-        strip.show()
+        stepped_RGB = c.interpolate_rgb(current_RGB, new_RGB, progress)
+        stepped_color = c.RGB_to_color(stepped_RGB)
 
+        controller.set_range_color(row, led_index, led_index + LEDS_PER_SQUARE - 1, stepped_color)
+        controller.show()
+    time.sleep(.1)
 

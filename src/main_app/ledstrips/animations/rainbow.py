@@ -13,15 +13,11 @@ def wheel(pos):
     return Color(0, pos * 3, 255 - pos * 3)
 
 
-def rainbow(strips, wait_ms=20, iterations=10):
+def rainbow(controller, wait_ms=20, iterations=10):
   """Draw rainbow that fades across all pixels at once."""
   for j in range(256 * iterations):
-    strip_i = 0
-    # strip = strips[0]
-    for strip in strips:
-      for i in range(strip.numPixels()):
-        strip.setPixelColor(i, wheel((i + j) & 255))
-      strip.show()
-      strip_i += 1
-    ##
+    for row in range(4):
+      for i in range(44):
+        controller.set_color(row, i, wheel((i * 2 + j + row * 11) & 255))
+    controller.show()
     time.sleep(wait_ms / 1000.0)
