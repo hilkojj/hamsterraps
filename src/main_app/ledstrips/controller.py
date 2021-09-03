@@ -1,5 +1,6 @@
+import random
 from rpi_ws281x import *
-from .animations import rainbow, stripes, test
+from .animations import rainbow, stripes, test, randbow, checkeredrainbow, snake
 
 # LED strip configuration:
 LED_COUNT = 11 * 8      # Number of LED pixels.
@@ -78,7 +79,7 @@ class Controller:
       line.begin()
       i += 1
 
-    self.cage_color = Color(255, 255, 255)
+    self.cage_color = Color(25, 15, 8)
     self.override_cage_color = False
 
   def row_i_to_dataline_i(self, row, i):
@@ -136,7 +137,10 @@ class Controller:
 
 ANIMATIONS = [
   rainbow.rainbow,
-  stripes.stripes
+  stripes.stripes,
+  randbow.randbow,
+  checkeredrainbow.checkeredrainbow,
+  snake.snake
 ]
 
 def start():
@@ -147,8 +151,7 @@ def start():
   # test.test(controller)
 
   while True:
-    for anim in ANIMATIONS:
-      anim(controller)
+    random.choice(ANIMATIONS)(controller)
 
 
 
