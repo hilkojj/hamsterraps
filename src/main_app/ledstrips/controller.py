@@ -1,6 +1,6 @@
 import random
 from rpi_ws281x import *
-from .animations import rainbow, stripes, test, randbow, checkeredrainbow, snake
+from .animations import rainbow, stripes, test, randbow, checkeredrainbow, snake, single_led_test
 
 # LED strip configuration:
 LED_COUNT = 11 * 8      # Number of LED pixels.
@@ -136,11 +136,12 @@ class Controller:
 
 
 ANIMATIONS = [
-  rainbow.rainbow,
-  stripes.stripes,
-  randbow.randbow,
-  checkeredrainbow.checkeredrainbow,
-  snake.snake
+  # rainbow.rainbow,
+  # stripes.stripes,
+  # randbow.randbow,
+  # checkeredrainbow.checkeredrainbow,
+  # snake.snake,
+  single_led_test.single_led_test
 ]
 
 def start():

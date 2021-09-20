@@ -1,4 +1,4 @@
-from . import tempsensor, main_app_server
+from . import tempsensor, main_app_server, wakey_alarm
 from .ledstrips import controller
 from ..common import db, logging
 
@@ -18,6 +18,10 @@ if __name__ == "__main__":
   led_thread = threading.Thread(target=controller.start)
   led_thread.start()
 
+  # start WAKEY WAKEY ALARM thread:
+  alarm_thread = threading.Thread(target=wakey_alarm.start)
+  alarm_thread.start()
+
   # start main app server:
   server_thread = threading.Thread(target=main_app_server.start)
   server_thread.start()
@@ -26,3 +30,4 @@ if __name__ == "__main__":
   tempsensor_thread .join()
   server_thread     .join()
   led_thread        .join()
+  alarm_thread      .join()
