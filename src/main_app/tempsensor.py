@@ -4,7 +4,7 @@ from ..common import db, main_app_socket
 from . import main_app_server
 
 DHT_SENSOR = Adafruit_DHT.DHT22
-DHT_PIN = 4
+DHT_PIN = 6
 
 def start():
   humidity, temperature = 0, 0
@@ -69,7 +69,7 @@ def start():
         print("Sensor failure. Check wiring.")
       else:
         failed_once = True
-    time.sleep(1.5)
+    time.sleep(5)
 
   con.close()
 

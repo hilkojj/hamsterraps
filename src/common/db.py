@@ -14,6 +14,8 @@ def create_db():
   cur.execute('''CREATE TABLE IF NOT EXISTS temp_humid_hour
                (date integer, temperature real, humidity real)''')
 
+  # cur.execute('''DELETE FROM temp_humid_10minutes WHERE temperature > 25.8''')
+
   # cur.execute('''CREATE TABLE IF NOT EXISTS current_values
   #              (temperature real, humidity real)''')
 
