@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>slideshow</title>
+
+    <style>
+
+	html, body {
+		margin: 0;
+		padding: 0;
+		background: black;
+		height: 100%;
+		overflow: hidden;
+		cursor: none !important;
+	}
+
+	.media-display {
+		height: 100%;
+		
+	}
+
+	.media {
+		height: 100%;
+		width: 100%;
+		position: absolute;
+		z-index: 1;
+	}
+	img.media {
+		object-fit: contain;
+		animation: zooming 60s infinite;
+	}
+	video.media {
+		object-fit: contain;
+	}
+	#blurred {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		left: 0;
+		background-size: cover;
+		background-position: center;
+		filter: blur(75px);
+		opacity: .7;
+		z-index: 0;
+	}
+
+	@keyframes zooming {
+	
+		0%, 100% {
+			transform: scale(1.0);
+		}
+
+		50% {
+			transform: scale(1.4);
+		}
+
+	}
+
+	#albums {
+		position: absolute;
+		display: none;
+		flex-direction: column;
+		flex-wrap: wrap;
+		top: 0;
+		z-index: 10;
+		list-style: none;
+		height: 100%;
+	}
+	#albums li {
+		padding: 20px;
+		margin: 6px;
+		backdrop-filter: blur(10px);
+		background: rgba(0,0,0,.7);
+		border-radius: 10px;
+		border: solid 1.5px rgba(255,255,255,.1);
+		color: white;
+	}
+	#albums li:hover {
+		background: rgba(0,0,0,.4);
+	}
+	#albums li:active {
+		background: rgba(50,0,100, .4);
+	}
+
+	#sensors {
+		position: absolute;
+		bottom: 20px;
+		left: 20px;
+		width: 100px;
+		height: 100px;
+		border-radius: 100%;
+		z-index: 2;
+		color: rgba(255, 255, 255, .7);
+		font-weight: bold;
+		font-size: 20px;
+		box-sizing: border-box;
+		padding: 24px;
+		text-align: center;
+		backdrop-filter: blur(10px);
+		background: rgba(0,0,0,.2);
+		border: solid 1px rgba(0,0,0,.2);
+	}
+
+
+    </style>	
+
+</head>
+
+<body>
+
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+    <script type="text/javascript" src="with_list.js"></script>
+
+    <div class="media-display">
+	<div id="sensors">
+		<span id="temp"></span>
+		<br>
+		<span id="humid"></span>
+	</div>
+	<div id="blurred"></div>
+        <img id="photo" class="media">
+        <video id="video" class="media" muted autoplay></video>
+    </div>
+	<ul id="albums">
+	</ul>
+
+    
+</body>
+
+</html>
