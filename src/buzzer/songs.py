@@ -165,3 +165,37 @@ MII_MELODY = [
 ]
 MII_TEMPO = MII_MELODY[1::2]
 MII_MELODY = MII_MELODY[::2]
+
+
+ALARM_MELODY = [
+  "GS5", "GS5", "GS5",
+  0, 0,
+  "GS5", "GS5", "GS5",
+  0, 0,
+
+  "GS5", "GS5", "GS5", "GS5",
+  0, 0,
+  "GS5", "GS5", "GS5", "GS5",
+  0, 0,
+]
+ALARM_TEMPO = [
+  6, 6, 3,
+  8, 8,
+  6, 6, 3,
+  6, 6,
+
+  8, 8, 8, 4,
+  8, 8,
+  8, 8, 8, 4,
+  8, 8
+]
+
+
+SONG_NAMES = {
+  "mario_underworld": [UNDERWORLD_MELODY, UNDERWORLD_TEMPO],
+  "mario": [MARIO_MELODY, MARIO_TEMPO],
+  "tetris": [TETRIS_MELODY, TETRIS_TEMPO],
+  "blub": [BLUB_MELODY, BLUB_TEMPO],
+  "mii": [MII_MELODY, MII_TEMPO],
+  "alarm": [ALARM_MELODY, ALARM_TEMPO]
+}

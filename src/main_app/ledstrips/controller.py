@@ -80,7 +80,7 @@ class Controller:
       i += 1
 
     self.cage_color = Color(25, 15, 8)
-    self.override_cage_color = False
+    self.override_cage_color = True
 
   def row_i_to_dataline_i(self, row, i):
     """
@@ -136,12 +136,12 @@ class Controller:
 
 
 ANIMATIONS = [
-  # rainbow.rainbow,
-  # stripes.stripes,
-  # randbow.randbow,
-  # checkeredrainbow.checkeredrainbow,
-  # snake.snake,
-  single_led_test.single_led_test
+  rainbow.rainbow,
+  stripes.stripes,
+  randbow.randbow,
+  checkeredrainbow.checkeredrainbow,
+  snake.snake,
+  # single_led_test.single_led_test
 ]
 
 def start():

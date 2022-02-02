@@ -6,7 +6,14 @@ import subprocess
 
 def activate_alarm(alarm_timestamp):
   print("ALARM", alarm_timestamp)
-  proc = subprocess.Popen(["python", "-m", "src.buzzer.buzzer"])
+  proc = subprocess.Popen(["python", "-m", "src.buzzer.buzzer", "nice", "alarm"])
+  proc.wait()
+  proc = subprocess.Popen(["python", "-m", "src.buzzer.buzzer", "nice", "mii"])
+  proc.wait()
+  proc = subprocess.Popen(["python", "-m", "src.buzzer.buzzer", "nice", "mario_underworld"])
+  proc.wait()
+  proc = subprocess.Popen(["python", "-m", "src.buzzer.buzzer", "nice", "tetris"])
+  proc.wait()
 
 
 def start():
@@ -14,7 +21,7 @@ def start():
   db_con = db.get_connection()
   cur = db_con.cursor()
 
-  cur.execute("INSERT INTO alarms VALUES (?, ?)", (1632206918, 1632206918))
+  cur.execute("INSERT INTO alarms VALUES (?, ?)", (1633069613, 1633069613))
   db_con.commit()
 
   cur.execute("SELECT * FROM alarms WHERE alarm_timestamp > ?", (time.time(),))
