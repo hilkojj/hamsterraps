@@ -33,7 +33,7 @@ function load()
     console.log(albums.length + " albums found!")
 	albums.forEach(entry => {
 		albumsListElement.innerHTML += `
-			<li onclick="showAlbum('`+entry+`')">`+entry+`</li>
+			<li onclick="showAlbum('`+entry+`')">🖼️ `+entry+`</li>
 		`
 	})
 
@@ -76,7 +76,7 @@ function load()
 		}
 		else
 		{
-			setTimeout(showRandom, 3000)
+			setTimeout(showRandom, 20000)
 			document.getElementById("blurred").style.backgroundImage = `url("` + fileSrc + `")`
 		}
 	}
