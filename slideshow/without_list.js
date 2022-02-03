@@ -19,15 +19,18 @@ function load()
 
     
     const files = list_str.split("\n").filter(entry => entry.length > 0)
-    const baseSlashIndex = Math.min(...files.map(entry => entry.lastIndexOf('/')))
+    const baseSlashIndex = Math.min(...files.map(entry => entry.substring(0, entry.lastIndexOf("/"))).map(entry => entry.lastIndexOf('/')))
 
     console.log(files.length + " files found!")
 
     const albums = ["/", ...new Set(
-        files.filter(entry => entry.lastIndexOf('/') > baseSlashIndex)
-            .map(entry => entry.substring(baseSlashIndex))
+        files
+		.filter(entry => entry.lastIndexOf('/') > baseSlashIndex)
             .map(entry => entry.substring(0, entry.lastIndexOf("/")))
+            .map(entry => entry.substring(baseSlashIndex))
     )]
+//	alert(baseSlashIndex)
+//	alert(albums)
 	const albumsListElement = document.getElementById("albums")
 
     console.log(albums.length + " albums found!")
@@ -73,6 +76,10 @@ function load()
 		{
 			videoElement.onended = showRandom
 			document.getElementById("blurred").style.backgroundImage = "none"
+			videoElement.onloadeddata = () => {
+				videoElement.style.width = ((videoElement.videoWidth / videoElement.videoHeight) * 100) + "vh"
+//				alert(videoElement.style.width)
+			}
 		}
 		else
 		{
